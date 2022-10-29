@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	input, err := os.Open(("CHANGELOG.md"))
+	input, err := os.Open("CHANGELOG.md")
 	if err != nil {
 		panic(err)
 	}
