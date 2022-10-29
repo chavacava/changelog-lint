@@ -36,6 +36,7 @@ func (c *Changelog) String() string {
 type Version struct {
 	Version     string
 	Subsections []*Subsection
+	SourceLine  string
 }
 
 // String returns the markdown representation for the version.
@@ -64,8 +65,9 @@ func (v *Version) String() string {
 //
 // Common subsections are "Major Enhancements," and "Bug Fixes."
 type Subsection struct {
-	Name    string
-	History []*ChangeLine
+	Name       string
+	History    []*ChangeLine
+	SourceLine string
 }
 
 // String returns the markdown representation of the subsection.

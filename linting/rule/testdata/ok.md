@@ -5,7 +5,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 
 ## 1.9.0 - 1711-04-20
 
-### Infrastructure
+### Changed
 - Update actions/checkout to v3
 - @actions/core `1.2.6` -> `1.10.6`
 
@@ -13,6 +13,17 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 ### Added
 - [65](https://github.com/zattoo/changelog/issues/65) Supported [Yanked](https://keepachangelog.com/en/1.0.0/#yanked) releases
 
+### Changed
+- Update actions/checkout to v3
+
+### Deprecated
+- Update actions/checkout to v3
+
 ### Fixed
 - [60](https://github.com/zattoo/changelog/issues/60) Supported validation of separator between version and date
 
+### Removed
+- Update actions/checkout to v3
+
+### Security
+- Update actions/checkout to v3

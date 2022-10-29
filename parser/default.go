@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 
 	"github.com/chavacava/changelogger/model"
@@ -41,6 +42,80 @@ type token struct {
 }
 
 func (p Default) Parse(r io.Reader, config any) (*model.Changelog, error) {
+	cl, err := p.parse(r)
+	if err != nil {
+		return nil, err
+	}
+
+	err = p.decorateChangelog(cl, config)
+
+	return cl, nil
+}
+
+func (p Default) decorateChangelog(cl *model.Changelog, config any) error {
+	for _, v := range cl.Versions {
+		err := p.decorateVersion(v, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (p Default) decorateVersion(v *model.Version, config any) error {
+	versionPattern := `^## (\d+\.\d+.\d+)( .*)*$`
+	reVersion := regexp.MustCompile(versionPattern)
+
+	matches := reVersion.FindStringSubmatch(v.SourceLine)
+	if len(matches) < 2 {
+		return fmt.Errorf("the version\n\t%s\ndoes not matche %q", v.SourceLine, versionPattern)
+	}
+	v.Version = matches[1]
+
+	for _, s := range v.Subsections {
+		err := p.decorateSubsection(s, config)
+		if err != nil {
+			return fmt.Errorf("version %q contains a bad formated subsecion: %v", v.Version, err)
+		}
+	}
+
+	return nil
+}
+
+func (p Default) decorateSubsection(s *model.Subsection, config any) error {
+	subsectionPattern := `^### ([A-Z]+[a-z]+)[ ]*$`
+	reVersion := regexp.MustCompile(subsectionPattern)
+
+	matches := reVersion.FindStringSubmatch(s.SourceLine)
+	if len(matches) < 2 {
+		return fmt.Errorf("the subsection\n\t%s\ndoes not match %q", s.SourceLine, subsectionPattern)
+	}
+	s.Name = matches[1]
+
+	for _, e := range s.History {
+		err := p.decorateEntry(e, config)
+		if err != nil {
+			return fmt.Errorf("subsection %q contains a bad formated entry: %v", s.Name, err)
+		}
+	}
+
+	return nil
+}
+
+func (p Default) decorateEntry(e *model.ChangeLine, config any) error {
+	entryPattern := `^[*-] .+$`
+	reVersion := regexp.MustCompile(entryPattern)
+
+	matches := reVersion.FindStringSubmatch(e.Summary)
+	if len(matches) < 1 {
+		return fmt.Errorf("the entry\n\t%s\ndoes not match %q", e.Summary, entryPattern)
+	}
+
+	return nil
+}
+
+func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 	result := model.NewChangelog()
 	scanner := bufio.NewScanner(r)
 	scanner.Split(bufio.ScanLines)
@@ -90,7 +165,7 @@ func (p Default) Parse(r io.Reader, config any) (*model.Changelog, error) {
 				return nil, fmt.Errorf("unexpected line: %s\nexpecting standard text line or version", tok.fullText)
 			}
 		case version:
-			newVersion := &model.Version{Version: tok.fullText}
+			newVersion := &model.Version{SourceLine: tok.fullText}
 			result.Versions = append(result.Versions, newVersion)
 			currentVersion = newVersion
 			tok = <-tokens
@@ -105,7 +180,7 @@ func (p Default) Parse(r io.Reader, config any) (*model.Changelog, error) {
 				return nil, fmt.Errorf("unexpected line:%s\nexpecting subsection or version", tok.fullText)
 			}
 		case subsection:
-			newSubsection := &model.Subsection{Name: tok.fullText}
+			newSubsection := &model.Subsection{SourceLine: tok.fullText}
 			currentVersion.Subsections = append(currentVersion.Subsections, newSubsection)
 			currentSubsection = newSubsection
 			tok = <-tokens

@@ -22,8 +22,8 @@ var bundles []testBundle = []testBundle{
 		SubsectionEmpty{},
 		map[string][]string{
 			"subection-empty.md": {
-				`empty subsection "### Infrastructure" in version ## 1.9.0 - 1711-04-20`,
-				`empty subsection "### Added" in version ## 1.9.0 - 1711-04-20`,
+				`empty subsection "Infrastructure" in version 1.9.0`,
+				`empty subsection "Added" in version 1.9.0`,
 			},
 			"ok.md": { /* no error expected */ },
 		},
@@ -32,8 +32,8 @@ var bundles []testBundle = []testBundle{
 		VersionEmpty{},
 		map[string][]string{
 			"version-empty.md": {
-				`empty version "## 1.9.0"`,
-				`empty version "## 1.6.0"`,
+				`empty version "1.9.0"`,
+				`empty version "1.6.0"`,
 			},
 			"ok.md": { /* no error expected */ },
 		},
@@ -42,8 +42,8 @@ var bundles []testBundle = []testBundle{
 		SubsectionNamming{},
 		map[string][]string{
 			"subsection-namming.md": {
-				`unknown subsection "### Infrastructures" in version ## 1.9.0 - 1111-04-20`,
-				`unknown subsection "### Addeda" in version ## 1.9.0 - 1111-04-20`,
+				`unknown subsection "Infrastructures" in version 1.9.0`,
+				`unknown subsection "Addeda" in version 1.9.0`,
 			},
 			"ok.md": { /* no error expected */ },
 		},
