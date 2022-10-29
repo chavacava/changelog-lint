@@ -25,15 +25,8 @@ func TestDefaultParser(t *testing.T) {
 			err:  "unexpected end of file",
 		},
 		{
-			data: "CHANGELOG_ERR_2.md",
-			err: `bad formated version line:## 1.9.0 - 12-04-20
-does not match ^## \[?(Unreleased|\d+\.\d+\.\d+)\]?( - \d{4}-\d\d-\d\d)?[ ]*$
-not enought (>1) matches: []`,
-		},
-		{
 			data: "CHANGELOG_ERR_3.md",
-			err: `unexpected line: # Other
- expecting empty line or main title`,
+			err:  "unexpected end of file",
 		},
 		{
 			data: "CHANGELOG_ERR_4.md",

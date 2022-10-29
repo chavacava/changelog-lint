@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"regexp"
 	"strings"
 
 	"github.com/chavacava/changelogger/model"
@@ -20,25 +19,28 @@ const (
 	kindVersion
 	kindSubsection
 	kindEntry
-	kindOther
+	kindPlain
 	kindEOF
 	kindError
 )
 
+type state int
+
+const (
+	initial state = iota
+	title
+	version
+	subsection
+	entry
+)
+
 type token struct {
 	fullText string
-	match    string
 	kind     tokenKind
 	pos      int
-	err      error
 }
 
 func (p Default) Parse(r io.Reader, config any) (*model.Changelog, error) {
-	patterns, err := p.defaultOrConfPatterns(config)
-	if err != nil {
-		return nil, fmt.Errorf("bad parser configuration: %v", err)
-	}
-
 	result := model.NewChangelog()
 	scanner := bufio.NewScanner(r)
 	scanner.Split(bufio.ScanLines)
@@ -49,102 +51,87 @@ func (p Default) Parse(r io.Reader, config any) (*model.Changelog, error) {
 		for scanner.Scan() {
 			pos++
 			line := scanner.Text()
-			lineKind, match, err := p.retrieveLineKind(line, patterns)
+			lineKind := p.retrieveLineKind(line)
 			if lineKind == kindEmpty {
 				continue
 			}
-			tokens <- token{fullText: line, match: match, kind: lineKind, pos: pos, err: err}
+			tokens <- token{fullText: line, kind: lineKind, pos: pos}
 		}
 		tokens <- token{fullText: "", kind: kindEOF, pos: pos + 1}
 		close(tokens)
 	}()
 
-	state := "INITIAL"
+	state := initial
 	tok := <-tokens
 	var currentVersion *model.Version
 	var currentSubsection *model.Subsection
 	for {
 		switch state {
-		case "INITIAL":
+		case initial:
 			switch tok.kind {
 			case kindTitle:
-				state = "TITLE"
+				state = title
 			case kindEOF:
 				return nil, fmt.Errorf("unexpected end of file")
 			default:
 				return nil, fmt.Errorf("unexpected line: %s\n expecting empty line or main title", tok.fullText)
 			}
-		case "TITLE":
+		case title:
 			tok = <-tokens
-			if tok.err != nil {
-				return nil, tok.err
-			}
 			switch tok.kind {
-			case kindOther:
+			case kindPlain:
 				result.Header = append(result.Header, tok.fullText)
 				tok = <-tokens
-				if tok.err != nil {
-					return nil, tok.err
-				}
 			case kindVersion:
-				state = "VERSION"
+				state = version
 			case kindEOF:
 				return nil, fmt.Errorf("unexpected end of file")
 			default:
 				return nil, fmt.Errorf("unexpected line: %s\nexpecting standard text line or version", tok.fullText)
 			}
-		case "VERSION":
-			newVersion := &model.Version{Version: tok.match}
+		case version:
+			newVersion := &model.Version{Version: tok.fullText}
 			result.Versions = append(result.Versions, newVersion)
 			currentVersion = newVersion
 			tok = <-tokens
-			if tok.err != nil {
-				return nil, tok.err
-			}
 			switch tok.kind {
 			case kindVersion:
-				state = "VERSION"
+				state = version
 			case kindSubsection:
-				state = "SUBSECTION"
+				state = subsection
 			case kindEOF:
 				return nil, fmt.Errorf("unexpected end of file")
 			default:
 				return nil, fmt.Errorf("unexpected line:%s\nexpecting subsection or version", tok.fullText)
 			}
-		case "SUBSECTION":
-			newSubsection := &model.Subsection{Name: tok.match}
+		case subsection:
+			newSubsection := &model.Subsection{Name: tok.fullText}
 			currentVersion.Subsections = append(currentVersion.Subsections, newSubsection)
 			currentSubsection = newSubsection
 			tok = <-tokens
-			if tok.err != nil {
-				return nil, tok.err
-			}
 			switch tok.kind {
 			case kindSubsection:
-				state = "SUBSECTION"
+				state = subsection
 			case kindVersion:
-				state = "VERSION"
+				state = version
 			case kindEntry:
-				state = "ENTRY"
+				state = entry
 			case kindEOF:
 				return nil, fmt.Errorf("unexpected end of file")
 			default:
 				return nil, fmt.Errorf("unexpected line:%s\nexpecting subsection, version or change description", tok.fullText)
 			}
-		case "ENTRY":
-			newEntry := model.ChangeLine{Summary: tok.match}
+		case entry:
+			newEntry := model.ChangeLine{Summary: tok.fullText}
 			currentSubsection.History = append(currentSubsection.History, &newEntry)
 			tok = <-tokens
-			if tok.err != nil {
-				return nil, tok.err
-			}
 			switch tok.kind {
 			case kindSubsection:
-				state = "SUBSECTION"
+				state = subsection
 			case kindVersion:
-				state = "VERSION"
+				state = version
 			case kindEntry:
-				state = "ENTRY"
+				state = entry
 			case kindEOF:
 				return result, nil
 			default:
@@ -154,86 +141,27 @@ func (p Default) Parse(r io.Reader, config any) (*model.Changelog, error) {
 	}
 }
 
-const mdSectionTitle = "title"
-const mdSectionVersion = "version"
-const mdSectionSubsection = "subsection"
-const mdSectionEntry = "entry"
-const mdSectionPlain = "plain"
-
-func (p Default) defaultOrConfPatterns(config any) (map[string]*regexp.Regexp, error) {
-	result := map[string]*regexp.Regexp{
-		mdSectionTitle:      regexp.MustCompile(`^# (Changelog).*$`),
-		mdSectionVersion:    regexp.MustCompile(`^## \[?(Unreleased|\d+\.\d+\.\d+)\]?( - \d{4}-\d\d-\d\d)?[ ]*$`),
-		mdSectionSubsection: regexp.MustCompile(`^### ([A-Z][a-z]*).*$`),
-		mdSectionEntry:      regexp.MustCompile(`^[\*|\-] (.+)$`),
-		mdSectionPlain:      regexp.MustCompile(`^[A-Za-z].*$`),
-	}
-
-	userRegexp, ok := config.(map[string]string)
-	if !ok {
-		return nil, fmt.Errorf("expected map[string]string, got %T", config)
-	}
-	for k, v := range userRegexp {
-		re, err := regexp.Compile(v)
-		if err != nil {
-			return nil, fmt.Errorf("invalid regular expression %q for %q: %v", v, k, err)
-		}
-
-		result[k] = re
-	}
-
-	return result, nil
-}
-
-func (p Default) match(re *regexp.Regexp, text string) (string, error) {
-	matches := re.FindStringSubmatch(text)
-	if len(matches) > 1 {
-		return matches[1], nil
-	}
-	return "", fmt.Errorf("not enought (>1) matches: %v", matches)
-}
-
-func (p Default) retrieveLineKind(line string, patterns map[string]*regexp.Regexp) (tokenKind, string, error) {
+func (p Default) retrieveLineKind(line string) tokenKind {
 	trimedLine := strings.Trim(line, " ")
 	if strings.HasPrefix(trimedLine, "###") {
-		re := patterns[mdSectionSubsection]
-		match, err := p.match(re, line)
-		if err != nil {
-			return kindOther, match, fmt.Errorf("bad formated subsection line:%s\ndoes not match %s\n%v", line, re.String(), err)
-		}
-		return kindSubsection, match, nil
+		return kindSubsection
 	}
 
 	if strings.HasPrefix(trimedLine, "##") {
-		re := patterns[mdSectionVersion]
-		match, err := p.match(re, line)
-		if err != nil {
-			return kindOther, match, fmt.Errorf("bad formated version line:%s\ndoes not match %s\n%v", line, re.String(), err)
-		}
-		return kindVersion, match, nil
+		return kindVersion
 	}
 
 	if strings.HasPrefix(trimedLine, "#") {
-		re := patterns[mdSectionTitle]
-		match, err := p.match(re, line)
-		if err != nil {
-			return kindOther, match, fmt.Errorf("bad formated title line:%s\ndoes not match %s\n%v", line, re.String(), err)
-		}
-		return kindTitle, match, nil
+		return kindTitle
 	}
 
 	if strings.HasPrefix(trimedLine, "-") || strings.HasPrefix(trimedLine, "*") {
-		re := patterns[mdSectionEntry]
-		match, err := p.match(re, line)
-		if err != nil {
-			return kindOther, match, fmt.Errorf("bad formated change description line:%s\ndoes not match %s\n%v", line, re.String(), err)
-		}
-		return kindEntry, match, nil
+		return kindEntry
 	}
 
 	if trimedLine == "" {
-		return kindEmpty, "", nil
+		return kindEmpty
 	}
 
-	return kindOther, "", nil
+	return kindPlain
 }
