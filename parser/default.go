@@ -159,7 +159,7 @@ func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 				return nil, p.normalizeError("unexpected end of file", tok.pos)
 			default:
 				return nil, p.normalizeError(
-					fmt.Sprintf("unexpected line: %s\n expecting empty line or main title", tok.fullText),
+					fmt.Sprintf("unexpected line: %s\nexpecting empty line or main title", tok.fullText),
 					tok.pos,
 				)
 			}
