@@ -14,7 +14,7 @@ func (r VersionOrder) Apply(changes model.Changelog, failures chan linting.Failu
 	for _, version := range changes.Versions {
 		if previousVersion != "" && version.Version > previousVersion {
 			msg := fmt.Sprintf("version %q is not well sorted", version.Version)
-			failures <- linting.Failure{Originator: r.Name(), Message: msg}
+			failures <- linting.Failure{RuleName: r.Name(), Message: msg, Position: version.Position}
 		}
 		previousVersion = version.Version
 	}

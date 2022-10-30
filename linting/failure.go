@@ -1,6 +1,7 @@
 package linting
 
 type Failure struct {
-	Originator string
-	Message    string
+	RuleName string
+	Message  string
+	Position int
 }

@@ -14,7 +14,7 @@ func (r VersionEmpty) Apply(changes model.Changelog, failures chan linting.Failu
 	for _, version := range changes.Versions {
 		if len(version.Subsections) == 0 {
 			msg := fmt.Sprintf("empty version %q", version.Version)
-			failures <- linting.Failure{Originator: r.Name(), Message: msg}
+			failures <- linting.Failure{RuleName: r.Name(), Message: msg, Position: version.Position}
 		}
 		seen[version.Version] = struct{}{}
 	}

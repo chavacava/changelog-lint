@@ -15,7 +15,7 @@ func (r SubsectionOrder) Apply(changes model.Changelog, failures chan linting.Fa
 		for _, subsection := range version.Subsections {
 			if previousName != "" && subsection.Name < previousName {
 				msg := fmt.Sprintf("subsection %q is not sorted alphabetically in version %v", subsection.Name, version.Version)
-				failures <- linting.Failure{Originator: r.Name(), Message: msg}
+				failures <- linting.Failure{RuleName: r.Name(), Message: msg, Position: subsection.Position}
 			}
 			previousName = subsection.Name
 		}

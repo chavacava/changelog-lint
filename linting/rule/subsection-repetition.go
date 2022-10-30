@@ -17,7 +17,7 @@ func (r SubsectionRepetition) Apply(changes model.Changelog, failures chan linti
 			_, alreadySeen := seen[name]
 			if alreadySeen {
 				msg := fmt.Sprintf("duplicated subsection %q", name)
-				failures <- linting.Failure{Originator: r.Name(), Message: msg}
+				failures <- linting.Failure{RuleName: r.Name(), Message: msg, Position: subsection.Position}
 			}
 			seen[name] = struct{}{}
 		}

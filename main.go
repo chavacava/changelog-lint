@@ -49,7 +49,11 @@ func main() {
 	exitCode := 0
 
 	for failure := range failures {
-		println(failure.Originator + ": " + failure.Message)
+		lineInfo := ""
+		if failure.Position > 0 {
+			lineInfo = fmt.Sprintf("(line %d)", failure.Position)
+		}
+		fmt.Printf("%s: %s %s\n", failure.RuleName, failure.Message, lineInfo)
 		exitCode = 3
 	}
 

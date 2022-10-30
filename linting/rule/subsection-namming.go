@@ -13,7 +13,7 @@ func (r SubsectionNamming) Apply(changes model.Changelog, failures chan linting.
 	allowedSubsections, err := r.allowedSubsections(args)
 	if err != nil {
 		msg := fmt.Sprintf("bad rule configuration for %q: %v", r.Name(), err)
-		failures <- linting.Failure{Originator: r.Name(), Message: msg}
+		failures <- linting.Failure{RuleName: r.Name(), Message: msg}
 		return
 	}
 
@@ -24,7 +24,7 @@ func (r SubsectionNamming) Apply(changes model.Changelog, failures chan linting.
 				continue
 			}
 			msg := fmt.Sprintf("unknown subsection %q in version %v", subsection.Name, version.Version)
-			failures <- linting.Failure{Originator: r.Name(), Message: msg}
+			failures <- linting.Failure{RuleName: r.Name(), Message: msg, Position: subsection.Position}
 		}
 	}
 }

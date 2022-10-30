@@ -14,7 +14,7 @@ func (r SubsectionEmpty) Apply(changes model.Changelog, failures chan linting.Fa
 		for _, subsection := range version.Subsections {
 			if len(subsection.History) == 0 {
 				msg := fmt.Sprintf("empty subsection %q in version %v", subsection.Name, version.Version)
-				failures <- linting.Failure{Originator: r.Name(), Message: msg}
+				failures <- linting.Failure{RuleName: r.Name(), Message: msg, Position: subsection.Position}
 			}
 		}
 	}
