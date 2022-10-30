@@ -4,16 +4,37 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"runtime/debug"
+	"strings"
 
 	"github.com/chavacava/changelog-lint/linting"
 	"github.com/chavacava/changelog-lint/linting/rule"
 	"github.com/chavacava/changelog-lint/parser"
 )
 
-func main() {
-	flag.Parse()
-	args := flag.Args()
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+	builtBy = "unknown"
+)
 
+const (
+	codeOK = iota
+	codeRequestError
+	codeSyntaxError
+	codeLintError
+)
+
+func main() {
+	flagVersion := flag.Bool("version", false, "get changelog-lint version")
+	flag.Parse()
+
+	if *flagVersion {
+		println(versionInfo())
+		os.Exit(codeOK)
+	}
+	args := flag.Args()
 	inputFilename := "CHANGELOG.md"
 	if len(args) > 0 {
 		inputFilename = args[0]
@@ -21,14 +42,14 @@ func main() {
 	input, err := os.Open(inputFilename)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
+		os.Exit(codeRequestError)
 	}
 
 	p := parser.Default{}
 	changes, err := p.Parse(input, map[string]string{})
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(2)
+		os.Exit(codeSyntaxError)
 	}
 
 	linter := linting.Linter{}
@@ -46,7 +67,7 @@ func main() {
 
 	go linter.Lint(*changes, &config, failures)
 
-	exitCode := 0
+	exitCode := codeOK
 
 	for failure := range failures {
 		lineInfo := ""
@@ -54,8 +75,34 @@ func main() {
 			lineInfo = fmt.Sprintf("(line %d)", failure.Position)
 		}
 		fmt.Printf("%s: %s %s\n", failure.RuleName, failure.Message, lineInfo)
-		exitCode = 3
+		exitCode = codeLintError
 	}
 
 	os.Exit(exitCode)
+}
+
+func versionInfo() string {
+	var buildInfo string
+	if date != "unknown" && builtBy != "unknown" {
+		buildInfo = fmt.Sprintf("Built\t\t%s by %s\n", date, builtBy)
+	}
+
+	if commit != "none" {
+		buildInfo = fmt.Sprintf("Commit:\t\t%s\n%s", commit, buildInfo)
+	}
+
+	if version == "dev" {
+		bi, ok := debug.ReadBuildInfo()
+		if ok {
+			version = bi.Main.Version
+			if strings.HasPrefix(version, "v") {
+				version = bi.Main.Version[1:]
+			}
+			if len(buildInfo) == 0 {
+				return fmt.Sprintf("version %s\n", version)
+			}
+		}
+	}
+
+	return fmt.Sprintf("Version:\t%s\n%s", version, buildInfo)
 }
