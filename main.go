@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"os"
 
 	"github.com/chavacava/changelog-lint/linting"
@@ -9,15 +11,24 @@ import (
 )
 
 func main() {
-	input, err := os.Open("CHANGELOG.md")
+	flag.Parse()
+	args := flag.Args()
+
+	inputFilename := "CHANGELOG.md"
+	if len(args) > 0 {
+		inputFilename = args[0]
+	}
+	input, err := os.Open(inputFilename)
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	p := parser.Default{}
 	changes, err := p.Parse(input, map[string]string{})
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
+		os.Exit(2)
 	}
 
 	linter := linting.Linter{}
@@ -39,7 +50,7 @@ func main() {
 
 	for failure := range failures {
 		println(failure.Originator + ": " + failure.Message)
-		exitCode = 1
+		exitCode = 3
 	}
 
 	os.Exit(exitCode)
