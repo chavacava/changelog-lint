@@ -1,5 +1,3 @@
-module github.com/chavacava/changelogger
+module github.com/chavacava/changelog-lint
 
 go 1.19
-
-require github.com/parkr/changelog v1.3.0

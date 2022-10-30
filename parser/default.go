@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/chavacava/changelogger/model"
+	"github.com/chavacava/changelog-lint/model"
 )
 
 type Default struct{}

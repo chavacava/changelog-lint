@@ -3,9 +3,9 @@ package main
 import (
 	"os"
 
-	"github.com/chavacava/changelogger/linting"
-	"github.com/chavacava/changelogger/linting/rule"
-	"github.com/chavacava/changelogger/parser"
+	"github.com/chavacava/changelog-lint/linting"
+	"github.com/chavacava/changelog-lint/linting/rule"
+	"github.com/chavacava/changelog-lint/parser"
 )
 
 func main() {

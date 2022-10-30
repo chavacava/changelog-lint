@@ -3,8 +3,8 @@ package rule
 import (
 	"fmt"
 
-	"github.com/chavacava/changelogger/linting"
-	"github.com/chavacava/changelogger/model"
+	"github.com/chavacava/changelog-lint/linting"
+	"github.com/chavacava/changelog-lint/model"
 )
 
 type VersionRepetition struct{}

@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/chavacava/changelogger/parser"
+	"github.com/chavacava/changelog-lint/parser"
 )
 
 func TestDefaultParser(t *testing.T) {

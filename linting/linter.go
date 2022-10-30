@@ -1,7 +1,7 @@
 package linting
 
 import (
-	"github.com/chavacava/changelogger/model"
+	"github.com/chavacava/changelog-lint/model"
 )
 
 type Arguments = []any

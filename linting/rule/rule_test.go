@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/chavacava/changelogger/linting"
-	"github.com/chavacava/changelogger/model"
-	"github.com/chavacava/changelogger/parser"
+	"github.com/chavacava/changelog-lint/linting"
+	"github.com/chavacava/changelog-lint/model"
+	"github.com/chavacava/changelog-lint/parser"
 )
 
 type testBundle struct {
