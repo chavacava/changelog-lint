@@ -49,7 +49,7 @@ func (p Default) Parse(r io.Reader, config any) (*model.Changelog, error) {
 
 	err = p.decorateChangelog(cl, config)
 
-	return cl, nil
+	return cl, err
 }
 
 func (p Default) decorateChangelog(cl *model.Changelog, config any) error {
@@ -69,14 +69,18 @@ func (p Default) decorateVersion(v *model.Version, config any) error {
 
 	matches := reVersion.FindStringSubmatch(v.SourceLine)
 	if len(matches) < 2 {
-		return fmt.Errorf("the version\n\t%s\ndoes not matche %q", v.SourceLine, versionPattern)
+		return p.normalizeError(
+			fmt.Sprintf("the version\n\t%s\ndoes not match %q", v.SourceLine, versionPattern),
+			v.Position,
+		)
 	}
+
 	v.Version = matches[1]
 
 	for _, s := range v.Subsections {
 		err := p.decorateSubsection(s, config)
 		if err != nil {
-			return fmt.Errorf("version %q contains a bad formated subsecion: %v", v.Version, err)
+			return fmt.Errorf("version %q contains a bad formated subsection: %v", v.Version, err)
 		}
 	}
 
@@ -89,7 +93,10 @@ func (p Default) decorateSubsection(s *model.Subsection, config any) error {
 
 	matches := reVersion.FindStringSubmatch(s.SourceLine)
 	if len(matches) < 2 {
-		return fmt.Errorf("the subsection\n\t%s\ndoes not match %q", s.SourceLine, subsectionPattern)
+		return p.normalizeError(
+			fmt.Sprintf("the subsection\n\t%s\ndoes not match %q", s.SourceLine, subsectionPattern),
+			s.Position,
+		)
 	}
 	s.Name = matches[1]
 
@@ -109,7 +116,9 @@ func (p Default) decorateEntry(e *model.Entry, config any) error {
 
 	matches := reVersion.FindStringSubmatch(e.Summary)
 	if len(matches) < 1 {
-		return fmt.Errorf("the entry\n\t%s\ndoes not match %q", e.Summary, entryPattern)
+		return p.normalizeError(
+			fmt.Sprintf("the entry\n\t%s\ndoes not match %q", e.Summary, entryPattern),
+			e.Position)
 	}
 
 	return nil
@@ -147,9 +156,12 @@ func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 			case kindTitle:
 				state = title
 			case kindEOF:
-				return nil, fmt.Errorf("unexpected end of file")
+				return nil, p.normalizeError("unexpected end of file", tok.pos)
 			default:
-				return nil, fmt.Errorf("unexpected line: %s\n expecting empty line or main title", tok.fullText)
+				return nil, p.normalizeError(
+					fmt.Sprintf("unexpected line: %s\n expecting empty line or main title", tok.fullText),
+					tok.pos,
+				)
 			}
 		case title:
 			tok = <-tokens
@@ -160,12 +172,15 @@ func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 			case kindVersion:
 				state = version
 			case kindEOF:
-				return nil, fmt.Errorf("unexpected end of file")
+				return nil, p.normalizeError("unexpected end of file", tok.pos)
 			default:
-				return nil, fmt.Errorf("unexpected line: %s\nexpecting standard text line or version", tok.fullText)
+				return nil, p.normalizeError(
+					fmt.Sprintf("unexpected line: %s\nexpecting plain text line or version", tok.fullText),
+					tok.pos,
+				)
 			}
 		case version:
-			newVersion := &model.Version{SourceLine: tok.fullText}
+			newVersion := &model.Version{SourceLine: tok.fullText, Position: tok.pos}
 			result.Versions = append(result.Versions, newVersion)
 			currentVersion = newVersion
 			tok = <-tokens
@@ -175,12 +190,15 @@ func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 			case kindSubsection:
 				state = subsection
 			case kindEOF:
-				return nil, fmt.Errorf("unexpected end of file")
+				return nil, p.normalizeError("unexpected end of file", tok.pos)
 			default:
-				return nil, fmt.Errorf("unexpected line:%s\nexpecting subsection or version", tok.fullText)
+				return nil, p.normalizeError(
+					fmt.Sprintf("unexpected line:%s\nexpecting subsection or version", tok.fullText),
+					tok.pos,
+				)
 			}
 		case subsection:
-			newSubsection := &model.Subsection{SourceLine: tok.fullText}
+			newSubsection := &model.Subsection{SourceLine: tok.fullText, Position: tok.pos}
 			currentVersion.Subsections = append(currentVersion.Subsections, newSubsection)
 			currentSubsection = newSubsection
 			tok = <-tokens
@@ -192,12 +210,15 @@ func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 			case kindEntry:
 				state = entry
 			case kindEOF:
-				return nil, fmt.Errorf("unexpected end of file")
+				return nil, p.normalizeError("unexpected end of file", tok.pos)
 			default:
-				return nil, fmt.Errorf("unexpected line:%s\nexpecting subsection, version or change description", tok.fullText)
+				return nil, p.normalizeError(
+					fmt.Sprintf("unexpected line:%s\nexpecting subsection, version or change description", tok.fullText),
+					tok.pos,
+				)
 			}
 		case entry:
-			newEntry := model.Entry{Summary: tok.fullText}
+			newEntry := model.Entry{Summary: tok.fullText, Position: tok.pos}
 			currentSubsection.History = append(currentSubsection.History, &newEntry)
 			tok = <-tokens
 			switch tok.kind {
@@ -210,13 +231,16 @@ func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 			case kindEOF:
 				return result, nil
 			default:
-				return nil, fmt.Errorf("unexpected line:%s\nexpecting subsection, version or change description", tok.fullText)
+				return nil, p.normalizeError(
+					fmt.Sprintf("unexpected line:%s\nexpecting subsection, version or change description", tok.fullText),
+					tok.pos,
+				)
 			}
 		}
 	}
 }
 
-func (p Default) retrieveLineKind(line string) tokenKind {
+func (Default) retrieveLineKind(line string) tokenKind {
 	trimedLine := strings.Trim(line, " ")
 	if strings.HasPrefix(trimedLine, "###") {
 		return kindSubsection
@@ -239,4 +263,8 @@ func (p Default) retrieveLineKind(line string) tokenKind {
 	}
 
 	return kindPlain
+}
+
+func (Default) normalizeError(msg string, pos int) error {
+	return fmt.Errorf("%s (line %d)", msg, pos)
 }

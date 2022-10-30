@@ -2,6 +2,7 @@ package parser_test
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/chavacava/changelogger/parser"
@@ -51,7 +52,7 @@ expecting subsection, version or change description`,
 			t.Fatalf("unexpected error parsing %q:\n%v", dataPath, err)
 		case err != nil && tc.err != "":
 			// check error msg
-			if err.Error() != tc.err {
+			if !strings.HasPrefix(err.Error(), tc.err) {
 				t.Fatalf("expected error parsing %q:\n%v\ngot:\n%s", dataPath, tc.err, err)
 			}
 		case err == nil && tc.err != "":
