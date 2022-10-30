@@ -36,11 +36,11 @@ expecting subsection, version or change description`,
 		},
 		{
 			data: "CHANGELOG_ERR_6.md",
-			err:  "the version\n\t## 19.0\n" + `does not match "^## (\\d+\\.\\d+.\\d+)( .*)*$" (line 7)`,
+			err:  "the version\n\t## 19.0\n" + `does not match ^## (\d+\.\d+.\d+|\[Unreleased\])( .*)*$ (line 7)`,
 		},
 		{
 			data: "CHANGELOG_ERR_7.md",
-			err:  "version \"19.00.0\" contains a bad formated subsection: the subsection\n\t### 12 Adds\n" + `does not match "^### ([A-Z]+[a-z]+)[ ]*$" (line 9)`,
+			err:  "version \"19.00.0\" contains a bad formated subsection: the subsection\n\t### 12 Adds\n" + `does not match ^### ([A-Z]+[a-z]+)[ ]*$ (line 9)`,
 		},
 	}
 

@@ -70,7 +70,7 @@ func (p Default) decorateVersion(v *model.Version, config any) error {
 	matches := reVersion.FindStringSubmatch(v.SourceLine)
 	if len(matches) < 2 {
 		return p.normalizeError(
-			fmt.Sprintf("the version\n\t%s\ndoes not match %q", v.SourceLine, versionPattern),
+			fmt.Sprintf("the version\n\t%s\ndoes not match %s", v.SourceLine, versionPattern),
 			v.Position,
 		)
 	}
@@ -94,7 +94,7 @@ func (p Default) decorateSubsection(s *model.Subsection, config any) error {
 	matches := reVersion.FindStringSubmatch(s.SourceLine)
 	if len(matches) < 2 {
 		return p.normalizeError(
-			fmt.Sprintf("the subsection\n\t%s\ndoes not match %q", s.SourceLine, subsectionPattern),
+			fmt.Sprintf("the subsection\n\t%s\ndoes not match %s", s.SourceLine, subsectionPattern),
 			s.Position,
 		)
 	}
@@ -117,7 +117,7 @@ func (p Default) decorateEntry(e *model.Entry, config any) error {
 	matches := reVersion.FindStringSubmatch(e.Summary)
 	if len(matches) < 1 {
 		return p.normalizeError(
-			fmt.Sprintf("the entry\n\t%s\ndoes not match %q", e.Summary, entryPattern),
+			fmt.Sprintf("the entry\n\t%s\ndoes not match %s", e.Summary, entryPattern),
 			e.Position)
 	}
 
