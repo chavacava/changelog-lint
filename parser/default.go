@@ -64,7 +64,7 @@ func (p Default) decorateChangelog(cl *model.Changelog, config any) error {
 }
 
 func (p Default) decorateVersion(v *model.Version, config any) error {
-	versionPattern := `^## (\d+\.\d+.\d+)( .*)*$`
+	versionPattern := `^## (\d+\.\d+.\d+|\[Unreleased\])( .*)*$`
 	reVersion := regexp.MustCompile(versionPattern)
 
 	matches := reVersion.FindStringSubmatch(v.SourceLine)
