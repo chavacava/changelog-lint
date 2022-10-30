@@ -103,7 +103,7 @@ func (p Default) decorateSubsection(s *model.Subsection, config any) error {
 	return nil
 }
 
-func (p Default) decorateEntry(e *model.ChangeLine, config any) error {
+func (p Default) decorateEntry(e *model.Entry, config any) error {
 	entryPattern := `^[*-] .+$`
 	reVersion := regexp.MustCompile(entryPattern)
 
@@ -197,7 +197,7 @@ func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 				return nil, fmt.Errorf("unexpected line:%s\nexpecting subsection, version or change description", tok.fullText)
 			}
 		case entry:
-			newEntry := model.ChangeLine{Summary: tok.fullText}
+			newEntry := model.Entry{Summary: tok.fullText}
 			currentSubsection.History = append(currentSubsection.History, &newEntry)
 			tok = <-tokens
 			switch tok.kind {
