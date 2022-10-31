@@ -53,3 +53,20 @@ Check this [CHANGELOG.md](CHANGELOG.md) as example of the expected format.
 | `version-empty`| warns on versions without any subsection |
 | `version-order`| warns on versions not well ordered wrt their semver number |
 | `version-retpetition`| warns on versions appearing more than once |
+
+You can contribute new rules by implementing the `linting.Rule` interface:
+
+```go
+type Rule interface {
+	Apply(model.Changelog, chan Failure, Arguments)
+	Name() string
+}
+```
+
+## TODO
+
+* Accept parser configuration
+* Accept global configuration for enabling/disabling rules
+* Relase mode:
+    - Check last version corresponds to a given one, then
+    - `[Unreleased]` not allowed
