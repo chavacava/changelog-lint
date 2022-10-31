@@ -41,6 +41,12 @@ type token struct {
 	pos      int
 }
 
+type decoratorConfig struct {
+	versionPattern    *regexp.Regexp
+	subsectionpattern *regexp.Regexp
+	entryPattern      *regexp.Regexp
+}
+
 func (p Default) Parse(r io.Reader, config any) (*model.Changelog, error) {
 	cl, err := p.parse(r)
 	if err != nil {
@@ -53,8 +59,9 @@ func (p Default) Parse(r io.Reader, config any) (*model.Changelog, error) {
 }
 
 func (p Default) decorateChangelog(cl *model.Changelog, config any) error {
+	decConfig := p.extractDecoratorConfig(config)
 	for _, v := range cl.Versions {
-		err := p.decorateVersion(v, config)
+		err := p.decorateVersion(v, decConfig)
 		if err != nil {
 			return err
 		}
@@ -63,14 +70,19 @@ func (p Default) decorateChangelog(cl *model.Changelog, config any) error {
 	return nil
 }
 
-func (p Default) decorateVersion(v *model.Version, config any) error {
-	versionPattern := `^## (\d+\.\d+.\d+|\[Unreleased\])( .*)*$`
-	reVersion := regexp.MustCompile(versionPattern)
+func (p Default) extractDecoratorConfig(_ any) decoratorConfig {
+	return decoratorConfig{
+		versionPattern:    regexp.MustCompile(`^## (\d+\.\d+.\d+|\[Unreleased\])( .*)*$`),
+		subsectionpattern: regexp.MustCompile(`^### ([A-Z]+[a-z]+)[ ]*$`),
+		entryPattern:      regexp.MustCompile(`^[*-] .+$`),
+	}
+}
 
-	matches := reVersion.FindStringSubmatch(v.SourceLine)
+func (p Default) decorateVersion(v *model.Version, config decoratorConfig) error {
+	matches := config.versionPattern.FindStringSubmatch(v.SourceLine)
 	if len(matches) < 2 {
 		return p.normalizeError(
-			fmt.Sprintf("the version\n\t%s\ndoes not match %s", v.SourceLine, versionPattern),
+			fmt.Sprintf("the version\n\t%s\ndoes not match %s", v.SourceLine, config.versionPattern.String()),
 			v.Position,
 		)
 	}
@@ -87,14 +99,11 @@ func (p Default) decorateVersion(v *model.Version, config any) error {
 	return nil
 }
 
-func (p Default) decorateSubsection(s *model.Subsection, config any) error {
-	subsectionPattern := `^### ([A-Z]+[a-z]+)[ ]*$`
-	reVersion := regexp.MustCompile(subsectionPattern)
-
-	matches := reVersion.FindStringSubmatch(s.SourceLine)
+func (p Default) decorateSubsection(s *model.Subsection, config decoratorConfig) error {
+	matches := config.subsectionpattern.FindStringSubmatch(s.SourceLine)
 	if len(matches) < 2 {
 		return p.normalizeError(
-			fmt.Sprintf("the subsection\n\t%s\ndoes not match %s", s.SourceLine, subsectionPattern),
+			fmt.Sprintf("the subsection\n\t%s\ndoes not match %s", s.SourceLine, config.subsectionpattern.String()),
 			s.Position,
 		)
 	}
@@ -110,14 +119,11 @@ func (p Default) decorateSubsection(s *model.Subsection, config any) error {
 	return nil
 }
 
-func (p Default) decorateEntry(e *model.Entry, config any) error {
-	entryPattern := `^[*-] .+$`
-	reVersion := regexp.MustCompile(entryPattern)
-
-	matches := reVersion.FindStringSubmatch(e.Summary)
+func (p Default) decorateEntry(e *model.Entry, config decoratorConfig) error {
+	matches := config.entryPattern.FindStringSubmatch(e.Summary)
 	if len(matches) < 1 {
 		return p.normalizeError(
-			fmt.Sprintf("the entry\n\t%s\ndoes not match %s", e.Summary, entryPattern),
+			fmt.Sprintf("the entry\n\t%s\ndoes not match %s", e.Summary, config.entryPattern.String()),
 			e.Position)
 	}
 
