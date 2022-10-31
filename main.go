@@ -44,6 +44,7 @@ func main() {
 		fmt.Println(err)
 		os.Exit(codeRequestError)
 	}
+	defer input.Close()
 
 	p := parser.Default{}
 	changes, err := p.Parse(input, map[string]string{})
