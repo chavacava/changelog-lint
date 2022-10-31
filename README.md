@@ -30,12 +30,15 @@ The expected global format of the file is Markdown where:
 * `###` is used as header for subsections of versions,
 * `*` or `-` is used as item markers for change details entries
 
-```
-# Main title (e.g. Changelog)
-## Version (e.g. 1.2.3)
-### Subsection (e.g. Added)
-* Change entry
-```
+By default the following patterns are expected
+
+| Section | Pattern | 
+| -----| :---- |
+| Title | `^# .+$` |
+| Version | `^## (\d+\.\d+.\d+\|\[Unreleased\])( .*)*$` |
+| Subsection | `^### ([A-Z]+[a-z]+)[ ]*$` |
+| Entry | `^[*-] .+$` |
+
 
 Check this [CHANGELOG.md](CHANGELOG.md) as example of the expected format.
 
