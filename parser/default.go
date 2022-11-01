@@ -10,6 +10,8 @@ import (
 	"github.com/chavacava/changelog-lint/model"
 )
 
+// Default CHANGELOG parser
+// Parses Markdown changelogs
 type Default struct{}
 
 type tokenKind int
@@ -48,6 +50,7 @@ type decoratorConfig struct {
 	entryPattern      *regexp.Regexp
 }
 
+// Parse parses a changelog
 func (p Default) Parse(r io.Reader, config any) (*model.Changelog, error) {
 	cl, err := p.parse(r)
 	if err != nil {
