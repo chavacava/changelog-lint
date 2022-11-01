@@ -9,7 +9,7 @@ import (
 
 type SubsectionOrder struct{}
 
-func (r SubsectionOrder) Apply(changes model.Changelog, failures chan linting.Failure, _ []any) {
+func (r SubsectionOrder) Apply(changes model.Changelog, failures chan linting.Failure, _ linting.RuleConf) {
 	for _, version := range changes.Versions {
 		previousName := ""
 		for _, subsection := range version.Subsections {

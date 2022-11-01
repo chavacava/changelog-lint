@@ -9,7 +9,7 @@ import (
 
 type SubsectionEmpty struct{}
 
-func (r SubsectionEmpty) Apply(changes model.Changelog, failures chan linting.Failure, _ []any) {
+func (r SubsectionEmpty) Apply(changes model.Changelog, failures chan linting.Failure, _ linting.RuleConf) {
 	for _, version := range changes.Versions {
 		for _, subsection := range version.Subsections {
 			if len(subsection.History) == 0 {

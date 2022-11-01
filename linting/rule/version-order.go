@@ -11,7 +11,7 @@ import (
 
 type VersionOrder struct{}
 
-func (r VersionOrder) Apply(changes model.Changelog, failures chan linting.Failure, _ []any) {
+func (r VersionOrder) Apply(changes model.Changelog, failures chan linting.Failure, _ linting.RuleConf) {
 	previousVersion := ""
 	for _, version := range changes.Versions {
 		if previousVersion != "" && version.Version == "Unreleased" {

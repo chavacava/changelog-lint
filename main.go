@@ -7,8 +7,8 @@ import (
 	"runtime/debug"
 	"strings"
 
+	"github.com/chavacava/changelog-lint/config"
 	"github.com/chavacava/changelog-lint/linting"
-	"github.com/chavacava/changelog-lint/linting/rule"
 	"github.com/chavacava/changelog-lint/parser"
 )
 
@@ -46,6 +46,12 @@ func main() {
 	}
 	defer input.Close()
 
+	lintConfig, err := config.GetConfig("")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(codeRequestError)
+	}
+
 	p := parser.Default{}
 	changes, err := p.Parse(input, map[string]string{})
 	if err != nil {
@@ -55,18 +61,7 @@ func main() {
 
 	linter := linting.Linter{}
 	failures := make(chan linting.Failure)
-	r1 := rule.SubsectionNamming{}
-	r2 := rule.SubsectionOrder{}
-	r3 := rule.VersionOrder{}
-	r4 := rule.VersionRepetition{}
-	r5 := rule.VersionEmpty{}
-
-	config := linting.Config{
-		Rules:     []linting.Rule{r1, r2, r3, r4, r5},
-		RuleConfs: map[string][]any{},
-	}
-
-	go linter.Lint(*changes, &config, failures)
+	go linter.Lint(*changes, lintConfig, failures)
 
 	exitCode := codeOK
 

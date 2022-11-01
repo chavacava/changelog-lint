@@ -9,7 +9,7 @@ import (
 
 type SubsectionNamming struct{}
 
-func (r SubsectionNamming) Apply(changes model.Changelog, failures chan linting.Failure, args []any) {
+func (r SubsectionNamming) Apply(changes model.Changelog, failures chan linting.Failure, args linting.RuleConf) {
 	allowedSubsections, err := r.allowedSubsections(args)
 	if err != nil {
 		msg := fmt.Sprintf("bad rule configuration for %q: %v", r.Name(), err)
@@ -33,7 +33,7 @@ func (SubsectionNamming) Name() string {
 	return "subsection-namming"
 }
 
-func (r SubsectionNamming) allowedSubsections(args []any) (map[string]struct{}, error) {
+func (r SubsectionNamming) allowedSubsections(args linting.RuleConf) (map[string]struct{}, error) {
 	result := map[string]struct{}{
 		"Added":      {},
 		"Changed":    {},
@@ -42,17 +42,18 @@ func (r SubsectionNamming) allowedSubsections(args []any) (map[string]struct{}, 
 		"Removed":    {},
 		"Security":   {},
 	}
-	if len(args) == 0 {
+	if args == nil {
 		return result, nil
 	}
 
-	result = map[string]struct{}{}
-	for _, arg := range args {
-		allowed, ok := arg.(string)
-		if !ok {
-			return nil, fmt.Errorf("expected string, got %T", arg)
+	/*
+		for _, arg := range args {
+			allowed, ok := arg.(string)
+			if !ok {
+				return nil, fmt.Errorf("expected string, got %T", arg)
+			}
+			result[allowed] = struct{}{}
 		}
-		result[allowed] = struct{}{}
-	}
+	*/
 	return result, nil
 }

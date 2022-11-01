@@ -9,7 +9,7 @@ import (
 
 type VersionEmpty struct{}
 
-func (r VersionEmpty) Apply(changes model.Changelog, failures chan linting.Failure, _ []any) {
+func (r VersionEmpty) Apply(changes model.Changelog, failures chan linting.Failure, _ linting.RuleConf) {
 	seen := map[string]struct{}{}
 	for _, version := range changes.Versions {
 		if len(version.Subsections) == 0 {
