@@ -28,6 +28,7 @@ const (
 
 func main() {
 	flagVersion := flag.Bool("version", false, "get changelog-lint version")
+	flagConfig := flag.String("config", "", "set linter configuration")
 	flag.Parse()
 
 	if *flagVersion {
@@ -46,7 +47,7 @@ func main() {
 	}
 	defer input.Close()
 
-	lintConfig, err := config.GetConfig("")
+	lintConfig, err := config.GetConfig(*flagConfig)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(codeRequestError)

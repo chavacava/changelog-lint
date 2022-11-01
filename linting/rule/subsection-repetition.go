@@ -9,7 +9,7 @@ import (
 
 type SubsectionRepetition struct{}
 
-func (r SubsectionRepetition) Apply(changes model.Changelog, failures chan linting.Failure, _ linting.RuleConf) {
+func (r SubsectionRepetition) Apply(changes model.Changelog, failures chan linting.Failure, _ linting.RuleArgs) {
 	for _, version := range changes.Versions {
 		seen := map[string]struct{}{}
 		for _, subsection := range version.Subsections {

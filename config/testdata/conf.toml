@@ -1,0 +1,6 @@
+[rule.version-empty]
+    Disabled=true
+[rule.version-order]
+    Arguments=[1,2,3,4]
+[rule.version-repetition]
+    Arguments=["a string", "another one"]

@@ -9,7 +9,7 @@ import (
 
 type VersionRepetition struct{}
 
-func (r VersionRepetition) Apply(changes model.Changelog, failures chan linting.Failure, _ linting.RuleConf) {
+func (r VersionRepetition) Apply(changes model.Changelog, failures chan linting.Failure, _ linting.RuleArgs) {
 	seen := map[string]struct{}{}
 	for _, version := range changes.Versions {
 		_, alreadySeen := seen[version.Version]

@@ -1,5 +1,5 @@
 package linting
 
 type Config struct {
-	RuleConfs map[Rule]any
+	RuleArgs map[Rule]RuleArgs
 }
