@@ -20,6 +20,16 @@ changelog-lint some/path/changes.md
 ```
 will lint the `changes.md` file in the `some/path` directory
 
+### Error codes
+Executing the linter returns one of the following error codes
+
+| Code | Meaning | 
+| -----:| :---- |
+|`0`| no error|
+|`1`| bad execution parameters/flags (e.g. bad changelog filename)|
+|`2`| syntax error in the changelog file|
+|`3`| the linting found a problem in the changelog|
+ 
 ## Details
 
 The linter will apply a set of predefined rules (se below).
@@ -33,7 +43,7 @@ The expected global format of the file is Markdown where:
 By default the following patterns are expected
 
 | Section | Pattern | 
-| -----| :---- |
+| -----:| :---- |
 | Title | `^# .+$` |
 | Version | `^## (\d+\.\d+.\d+\|\[Unreleased\])( .*)*$` |
 | Subsection | `^### ([A-Z]+[a-z]+)[ ]*$` |
@@ -45,7 +55,7 @@ Check this [CHANGELOG.md](CHANGELOG.md) as example of the expected format.
 # Rules
 
 | Name | Description | 
-| -----| :----: |
+| -----:| :---- |
 | `subsection-empty`| warns on subsections without any entry |
 | `subsection-namming`| warns on unknown subsection names (`Added`, `Changed`, `Deprecated`, `Fixed`, `Removed`, `Security` are known) |
 | `subsection-order`| warns on subsections not listed alphabetically in a version |
