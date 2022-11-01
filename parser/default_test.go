@@ -14,6 +14,10 @@ func TestDefaultParser(t *testing.T) {
 		err  string
 	}{
 		{
+			data: "CHANGELOG_OK_0.md",
+			err:  "",
+		},
+		{
 			data: "CHANGELOG_OK_1.md",
 			err:  "",
 		},
@@ -36,7 +40,7 @@ expecting subsection, version or change description`,
 		},
 		{
 			data: "CHANGELOG_ERR_6.md",
-			err:  "the version\n\t## 19.0\n" + `does not match ^## (\d+\.\d+.\d+|\[Unreleased\])( .*)*$ (line 7)`,
+			err:  "the version\n\t## 19.0\n" + `does not match ^## \[?(\d+\.\d+.\d+|Unreleased)\]?( .*)*$ (line 7)`,
 		},
 		{
 			data: "CHANGELOG_ERR_7.md",

@@ -33,6 +33,7 @@ const (
 	version
 	subsection
 	entry
+	entryContinuation
 )
 
 type token struct {
@@ -43,7 +44,7 @@ type token struct {
 
 type decoratorConfig struct {
 	versionPattern    *regexp.Regexp
-	subsectionpattern *regexp.Regexp
+	subsectionPattern *regexp.Regexp
 	entryPattern      *regexp.Regexp
 }
 
@@ -72,8 +73,8 @@ func (p Default) decorateChangelog(cl *model.Changelog, config any) error {
 
 func (p Default) extractDecoratorConfig(_ any) decoratorConfig {
 	return decoratorConfig{
-		versionPattern:    regexp.MustCompile(`^## (\d+\.\d+.\d+|\[Unreleased\])( .*)*$`),
-		subsectionpattern: regexp.MustCompile(`^### ([A-Z]+[a-z]+)[ ]*$`),
+		versionPattern:    regexp.MustCompile(`^## \[?(\d+\.\d+.\d+|Unreleased)\]?( .*)*$`),
+		subsectionPattern: regexp.MustCompile(`^### ([A-Z]+[a-z]+)[ ]*$`),
 		entryPattern:      regexp.MustCompile(`^[*-] .+$`),
 	}
 }
@@ -100,10 +101,10 @@ func (p Default) decorateVersion(v *model.Version, config decoratorConfig) error
 }
 
 func (p Default) decorateSubsection(s *model.Subsection, config decoratorConfig) error {
-	matches := config.subsectionpattern.FindStringSubmatch(s.SourceLine)
+	matches := config.subsectionPattern.FindStringSubmatch(s.SourceLine)
 	if len(matches) < 2 {
 		return p.normalizeError(
-			fmt.Sprintf("the subsection\n\t%s\ndoes not match %s", s.SourceLine, config.subsectionpattern.String()),
+			fmt.Sprintf("the subsection\n\t%s\ndoes not match %s", s.SourceLine, config.subsectionPattern.String()),
 			s.Position,
 		)
 	}
@@ -155,6 +156,7 @@ func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 	tok := <-tokens
 	var currentVersion *model.Version
 	var currentSubsection *model.Subsection
+	var currentEntry *model.Entry
 	for {
 		switch state {
 		case initial:
@@ -224,8 +226,9 @@ func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 				)
 			}
 		case entry:
-			newEntry := model.Entry{Summary: tok.fullText, Position: tok.pos}
-			currentSubsection.History = append(currentSubsection.History, &newEntry)
+			newEntry := &model.Entry{Summary: tok.fullText, Position: tok.pos}
+			currentSubsection.History = append(currentSubsection.History, newEntry)
+			currentEntry = newEntry
 			tok = <-tokens
 			switch tok.kind {
 			case kindSubsection:
@@ -234,6 +237,28 @@ func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 				state = version
 			case kindEntry:
 				state = entry
+			case kindEOF:
+				return result, nil
+			case kindPlain:
+				state = entryContinuation
+			default:
+				return nil, p.normalizeError(
+					fmt.Sprintf("unexpected line:%s\nexpecting subsection, version or change description", tok.fullText),
+					tok.pos,
+				)
+			}
+		case entryContinuation:
+			currentEntry.Summary += " " + tok.fullText
+			tok = <-tokens
+			switch tok.kind {
+			case kindSubsection:
+				state = subsection
+			case kindVersion:
+				state = version
+			case kindEntry:
+				state = entry
+			case kindPlain:
+				state = entryContinuation
 			case kindEOF:
 				return result, nil
 			default:
