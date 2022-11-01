@@ -48,6 +48,43 @@ var bundles []testBundle = []testBundle{
 			"ok.md": { /* no error expected */ },
 		},
 	},
+	{
+		SubsectionOrder{},
+		map[string][]string{
+			"subsection-order.md": {
+				`subsection "Added" is not sorted alphabetically in version 1.9.0`,
+			},
+			"ok.md": { /* no error expected */ },
+		},
+	},
+	{
+		SubsectionRepetition{},
+		map[string][]string{
+			"subsection-repetition.md": {
+				`duplicated subsection "Added"`,
+			},
+			"ok.md": { /* no error expected */ },
+		},
+	},
+	{
+		VersionRepetition{},
+		map[string][]string{
+			"version-repetition.md": {
+				`duplicated version 1.8.0`,
+			},
+			"ok.md": { /* no error expected */ },
+		},
+	},
+	{
+		VersionOrder{},
+		map[string][]string{
+			"version-order.md": {
+				`version Unreleased must be at the top of the version list`,
+				`version 1.10.0 is not well sorted`,
+			},
+			"ok.md": { /* no error expected */ },
+		},
+	},
 }
 
 func TestRules(t *testing.T) {

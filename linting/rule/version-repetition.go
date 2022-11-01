@@ -14,7 +14,7 @@ func (r VersionRepetition) Apply(changes model.Changelog, failures chan linting.
 	for _, version := range changes.Versions {
 		_, alreadySeen := seen[version.Version]
 		if alreadySeen {
-			msg := fmt.Sprintf("duplicated version %q", version.Version)
+			msg := fmt.Sprintf("duplicated version %s", version.Version)
 			failures <- linting.Failure{RuleName: r.Name(), Message: msg, Position: version.Position}
 		}
 		seen[version.Version] = struct{}{}
