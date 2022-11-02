@@ -20,7 +20,9 @@ func (r VersionOrder) Apply(changes model.Changelog, failures chan linting.Failu
 			continue
 		}
 
-		if previousVersion != "" && r.compareVersions(previousVersion, version.Version) < 0 {
+		if previousVersion != "" &&
+			previousVersion != "Unreleased" &&
+			r.compareVersions(previousVersion, version.Version) < 0 {
 			msg := fmt.Sprintf("version %s is not well sorted", version.Version)
 			failures <- linting.Failure{RuleName: r.Name(), Message: msg, Position: version.Position}
 		}

@@ -10,6 +10,7 @@
 
 ### Fixed
 - Multiline entries are not accepted by the default parser
+- `version-order` rule fails to compare `Unreleased` version wrt other versions
 
 ## 0.1.0 - 2022/10/31
 
