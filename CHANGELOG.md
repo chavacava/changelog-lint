@@ -5,6 +5,9 @@
 ### Added
 - Configuration support
 
+### Changed
+- `version-empty` rule now accepts `Unreleased` version to be empty
+
 ### Fixed
 - Multiline entries are not accepted by the default parser
 

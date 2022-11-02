@@ -12,7 +12,7 @@ type VersionEmpty struct{}
 func (r VersionEmpty) Apply(changes model.Changelog, failures chan linting.Failure, _ linting.RuleArgs) {
 	seen := map[string]struct{}{}
 	for _, version := range changes.Versions {
-		if len(version.Subsections) == 0 {
+		if len(version.Subsections) == 0 && version.Version != "Unreleased" {
 			msg := fmt.Sprintf("empty version %q", version.Version)
 			failures <- linting.Failure{RuleName: r.Name(), Message: msg, Position: version.Position}
 		}
