@@ -9,6 +9,7 @@ import (
 
 	"github.com/chavacava/changelog-lint/config"
 	"github.com/chavacava/changelog-lint/linting"
+	"github.com/chavacava/changelog-lint/linting/rule"
 	"github.com/chavacava/changelog-lint/parser"
 )
 
@@ -29,6 +30,7 @@ const (
 func main() {
 	flagVersion := flag.Bool("version", false, "get changelog-lint version")
 	flagConfig := flag.String("config", "", "set linter configuration")
+	flagReleaseMode := flag.String("release", "", "enables release-related checks (the given string must be the release version, e.g. 1.2.3)")
 	flag.Parse()
 
 	if *flagVersion {
@@ -68,7 +70,12 @@ func main() {
 
 	linter := linting.Linter{}
 	failures := make(chan linting.Failure)
-	go linter.Lint(*changes, mainConfig.LintingConfig(), failures)
+	lintingConfig := mainConfig.LintingConfig()
+	if *flagReleaseMode != "" { // Add release rule to the linting conf
+		releaseRule := &rule.Release{}
+		lintingConfig.RuleArgs[releaseRule] = *flagReleaseMode
+	}
+	go linter.Lint(*changes, lintingConfig, failures)
 
 	exitCode := codeOK
 

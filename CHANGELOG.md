@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+* `release` mode command line flag to enable release-related checks. Example, when releasing version 1.2.3:
+```bash
+changelog-lint -release 1.2.3
+```
+
 ### Fixed
 * Typo in rule name: `subsection-namming`
 

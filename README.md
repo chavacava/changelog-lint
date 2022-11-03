@@ -22,7 +22,14 @@ will lint the `changes.md` file in the `some/path` directory
 
 To get the full list of command line flags:
 ```
-changelog-lint -h
+$ changelog-lint -h
+Usage of changelog-lint:
+  -config string
+        set linter configuration
+  -release string
+        enables release-related checks (the given string must be the release version, e.g. 1.2.3)
+  -version
+        get changelog-lint version
 ```
 
 ### Configuration

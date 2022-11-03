@@ -15,12 +15,14 @@ import (
 
 type testBundle struct {
 	rule      linting.Rule
+	args      any
 	testCases map[string][]string // map[filename][]expectedFailureMessages
 }
 
 var bundles []testBundle = []testBundle{
 	{
 		SubsectionEmpty{},
+		nil,
 		map[string][]string{
 			"subection-empty.md": {
 				`empty subsection "Infrastructure" in version 1.9.0`,
@@ -31,6 +33,7 @@ var bundles []testBundle = []testBundle{
 	},
 	{
 		VersionEmpty{},
+		nil,
 		map[string][]string{
 			"version-empty.md": {
 				`empty version "1.9.0"`,
@@ -41,6 +44,7 @@ var bundles []testBundle = []testBundle{
 	},
 	{
 		SubsectionNaming{},
+		nil,
 		map[string][]string{
 			"subsection-naming.md": {
 				`unknown subsection "Infrastructures" in version 1.9.0`,
@@ -51,6 +55,7 @@ var bundles []testBundle = []testBundle{
 	},
 	{
 		SubsectionOrder{},
+		nil,
 		map[string][]string{
 			"subsection-order.md": {
 				`subsection "Added" is not sorted alphabetically in version 1.9.0`,
@@ -60,6 +65,7 @@ var bundles []testBundle = []testBundle{
 	},
 	{
 		SubsectionRepetition{},
+		nil,
 		map[string][]string{
 			"subsection-repetition.md": {
 				`duplicated subsection "Added"`,
@@ -69,6 +75,7 @@ var bundles []testBundle = []testBundle{
 	},
 	{
 		VersionRepetition{},
+		nil,
 		map[string][]string{
 			"version-repetition.md": {
 				`duplicated version 1.8.0`,
@@ -78,12 +85,32 @@ var bundles []testBundle = []testBundle{
 	},
 	{
 		VersionOrder{},
+		nil,
 		map[string][]string{
 			"version-order.md": {
 				`version Unreleased must be at the top of the version list`,
 				`version 1.10.0 is not well sorted`,
 			},
 			"ok.md": { /* no error expected */ },
+		},
+	},
+	{
+		Release{},
+		nil,
+		map[string][]string{
+			"ok.md": {
+				"expected release version argument to be a string, got <nil> instead",
+			},
+		},
+	},
+	{
+		Release{},
+		"1.0.0",
+		map[string][]string{
+			"ok.md": {
+				"expected release version to be 1.0.0, got Unreleased instead",
+				"version Unreleased forbidden in release mode",
+			},
 		},
 	},
 }
@@ -93,10 +120,10 @@ func TestRules(t *testing.T) {
 		for file, wantFailureMessages := range bundle.testCases {
 			changes, err := parseChangelog(file)
 			if err != nil {
-				t.Fatal(err.Error())
+				t.Fatalf("%s/%s:%v", bundle.rule.Name(), file, err)
 			}
 
-			if err := ruleTester(bundle.rule, *changes, wantFailureMessages); err != nil {
+			if err := ruleTester(bundle.rule, bundle.args, *changes, wantFailureMessages); err != nil {
 				t.Fatalf("%s/%s:%v", bundle.rule.Name(), file, err)
 			}
 		}
@@ -118,11 +145,11 @@ func parseChangelog(filename string) (*model.Changelog, error) {
 	return changes, nil
 }
 
-func ruleTester(r linting.Rule, changes model.Changelog, wantFailureMessages []string) error {
+func ruleTester(r linting.Rule, args any, changes model.Changelog, wantFailureMessages []string) error {
 	failures := make(chan linting.Failure)
 
 	go func() {
-		r.Apply(changes, failures, nil)
+		r.Apply(changes, failures, args)
 		close(failures)
 	}()
 
