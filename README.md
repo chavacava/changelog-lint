@@ -107,9 +107,3 @@ type Rule interface {
 	Name() string
 }
 ```
-
-## TODO
-
-* Relase mode:
-    - Check last version corresponds to a given one, then
-    - `[Unreleased]` not allowed
