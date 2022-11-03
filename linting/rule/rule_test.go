@@ -24,7 +24,7 @@ var bundles []testBundle = []testBundle{
 		SubsectionEmpty{},
 		nil,
 		map[string][]string{
-			"subection-empty.md": {
+			"subsection-empty.md": {
 				`empty subsection "Infrastructure" in version 1.9.0`,
 				`empty subsection "Added" in version 1.9.0`,
 			},
