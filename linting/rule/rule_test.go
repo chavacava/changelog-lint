@@ -40,9 +40,9 @@ var bundles []testBundle = []testBundle{
 		},
 	},
 	{
-		SubsectionNamming{},
+		SubsectionNaming{},
 		map[string][]string{
-			"subsection-namming.md": {
+			"subsection-naming.md": {
 				`unknown subsection "Infrastructures" in version 1.9.0`,
 				`unknown subsection "Addeda" in version 1.9.0`,
 			},

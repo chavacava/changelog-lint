@@ -7,9 +7,9 @@ import (
 	"github.com/chavacava/changelog-lint/model"
 )
 
-type SubsectionNamming struct{}
+type SubsectionNaming struct{}
 
-func (r SubsectionNamming) Apply(changes model.Changelog, failures chan linting.Failure, args linting.RuleArgs) {
+func (r SubsectionNaming) Apply(changes model.Changelog, failures chan linting.Failure, args linting.RuleArgs) {
 	allowedSubsections, err := r.allowedSubsections(args)
 	if err != nil {
 		msg := fmt.Sprintf("bad rule configuration for %q: %v", r.Name(), err)
@@ -29,11 +29,11 @@ func (r SubsectionNamming) Apply(changes model.Changelog, failures chan linting.
 	}
 }
 
-func (SubsectionNamming) Name() string {
-	return "subsection-namming"
+func (SubsectionNaming) Name() string {
+	return "subsection-naming"
 }
 
-func (r SubsectionNamming) allowedSubsections(args linting.RuleArgs) (map[string]struct{}, error) {
+func (r SubsectionNaming) allowedSubsections(args linting.RuleArgs) (map[string]struct{}, error) {
 	result := map[string]struct{}{
 		"Added":      {},
 		"Changed":    {},

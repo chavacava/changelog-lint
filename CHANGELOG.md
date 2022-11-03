@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+* Typo in rule name: `subsection-namming`
+
 ## 0.2.0 - 2022/11/03
 
 ### Added
@@ -18,7 +23,7 @@
 ### Added
 - Default changelog parser for `.md` format
 - Rule `subsection-empty`
-- Rule `subsection-namming`
+- Rule `subsection-naming`
 - Rule `subsection-order`
 - Rule `subsection-repetition`
 - Rule `version-empty`

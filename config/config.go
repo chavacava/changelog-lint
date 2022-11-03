@@ -14,7 +14,7 @@ import (
 
 var allRules = []linting.Rule{
 	rule.SubsectionEmpty{},
-	rule.SubsectionNamming{},
+	rule.SubsectionNaming{},
 	rule.SubsectionOrder{},
 	rule.SubsectionRepetition{},
 	rule.VersionEmpty{},
