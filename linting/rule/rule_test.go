@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 
 	"github.com/chavacava/changelog-lint/linting"
@@ -96,7 +97,7 @@ func TestRules(t *testing.T) {
 			}
 
 			if err := ruleTester(bundle.rule, *changes, wantFailureMessages); err != nil {
-				t.Fatal(err.Error())
+				t.Fatalf("%s/%s:%v", bundle.rule.Name(), file, err)
 			}
 		}
 	}
@@ -109,7 +110,7 @@ func parseChangelog(filename string) (*model.Changelog, error) {
 	}
 
 	p := parser.Default{}
-	changes, err := p.Parse(input, map[string]string{})
+	changes, err := p.Parse(input, parserConf())
 	if err != nil {
 		return nil, err
 	}
@@ -146,4 +147,13 @@ func ruleTester(r linting.Rule, changes model.Changelog, wantFailureMessages []s
 	}
 
 	return nil
+}
+
+func parserConf() *parser.Config {
+	return &parser.Config{
+		TitlePattern:      regexp.MustCompile(`.+`),
+		VersionPattern:    regexp.MustCompile(`^## \[?(\d+\.\d+.\d+|Unreleased)\]?( .*)*$`),
+		SubsectionPattern: regexp.MustCompile(`^### ([A-Z]+[a-z]+)[ ]*$`),
+		EntryPattern:      regexp.MustCompile(`^[*-] .+$`),
+	}
 }

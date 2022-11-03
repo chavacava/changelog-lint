@@ -3,7 +3,8 @@
 ## [Unreleased]
 
 ### Added
-- Configuration support
+- Rules configuration support
+- Parser configuration support
 
 ### Changed
 - `version-empty` rule now accepts `Unreleased` version to be empty

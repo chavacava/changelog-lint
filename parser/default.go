@@ -45,27 +45,33 @@ type token struct {
 }
 
 type decoratorConfig struct {
+	titlePattern      *regexp.Regexp
 	versionPattern    *regexp.Regexp
 	subsectionPattern *regexp.Regexp
 	entryPattern      *regexp.Regexp
 }
 
 // Parse parses a changelog
-func (p Default) Parse(r io.Reader, config any) (*model.Changelog, error) {
+func (p Default) Parse(r io.Reader, config *Config) (*model.Changelog, error) {
 	cl, err := p.parse(r)
 	if err != nil {
 		return nil, err
 	}
 
-	err = p.decorateChangelog(cl, config)
+	err = p.decorateChangelog(cl, p.extractDecoratorConfig(config))
 
 	return cl, err
 }
 
-func (p Default) decorateChangelog(cl *model.Changelog, config any) error {
-	decConfig := p.extractDecoratorConfig(config)
+func (p Default) decorateChangelog(cl *model.Changelog, config decoratorConfig) error {
+	if !config.titlePattern.Match([]byte(cl.Header[0])) {
+		return p.normalizeError(
+			fmt.Sprintf("the title\n\t%s\ndoes not match %s", cl.Header[0], config.titlePattern.String()),
+			1,
+		)
+	}
 	for _, v := range cl.Versions {
-		err := p.decorateVersion(v, decConfig)
+		err := p.decorateVersion(v, config)
 		if err != nil {
 			return err
 		}
@@ -74,11 +80,12 @@ func (p Default) decorateChangelog(cl *model.Changelog, config any) error {
 	return nil
 }
 
-func (p Default) extractDecoratorConfig(_ any) decoratorConfig {
+func (p Default) extractDecoratorConfig(conf *Config) decoratorConfig {
 	return decoratorConfig{
-		versionPattern:    regexp.MustCompile(`^## \[?(\d+\.\d+.\d+|Unreleased)\]?( .*)*$`),
-		subsectionPattern: regexp.MustCompile(`^### ([A-Z]+[a-z]+)[ ]*$`),
-		entryPattern:      regexp.MustCompile(`^[*-] .+$`),
+		titlePattern:      conf.TitlePattern,
+		versionPattern:    conf.VersionPattern,
+		subsectionPattern: conf.SubsectionPattern,
+		entryPattern:      conf.EntryPattern,
 	}
 }
 
@@ -175,11 +182,11 @@ func (p Default) parse(r io.Reader) (*model.Changelog, error) {
 				)
 			}
 		case title:
+			result.Header = append(result.Header, tok.fullText)
 			tok = <-tokens
 			switch tok.kind {
 			case kindPlain:
-				result.Header = append(result.Header, tok.fullText)
-				tok = <-tokens
+				// do nothing -> it will return to case title
 			case kindVersion:
 				state = version
 			case kindEOF:

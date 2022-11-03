@@ -32,6 +32,7 @@ If defaults do not fit your needs you can configure the linter by providing a co
 Via the configuration file you can:
 - Disable rules (all enabled by default)
 - Provide arguments to rules
+- Overwrite default parser patterns
 
 The format of the configuration file is TOML.
 Example:
@@ -40,7 +41,11 @@ Example:
     Disabled=true
 [rule.subsection-namming]
     Arguments=["Performance", "Refactoring"]
+[parser.patterns]
+    title="^Changelog( .*)?$"
+    entry="^\+ .+$"
 ```
+Plase notice some patterns require to have a capturing group (see [Details](#details) below)
 
 ### Error codes
 Executing the linter returns one of the following error codes
@@ -64,13 +69,14 @@ The expected global format of the file is Markdown where:
 
 By default the following patterns are expected
 
-| Section | Pattern | 
-| -----:| :---- |
-| Title | `^# .+$` |
-| Version | `^## (\d+\.\d+.\d+\|\[Unreleased\])( .*)*$` |
-| Subsection | `^### ([A-Z]+[a-z]+)[ ]*$` |
-| Entry | `^[*-] .+$` |
+| Section | Pattern | Capturing Group |
+| -----:| :---- |:----|
+| title | `^# .+$` | N/A |
+| version | `^## (\d+\.\d+.\d+\|\[Unreleased\])( .*)*$` |  version name |
+| subsection | `^### ([A-Z]+[a-z]+)[ ]*$` | subsection name |
+| entry | `^[*-] .+$` | N/A |
 
+These patterns can be configured (see [Configuration](#configuration))
 
 Check this [CHANGELOG.md](CHANGELOG.md) as example of the expected format.
 
@@ -97,7 +103,6 @@ type Rule interface {
 
 ## TODO
 
-* Accept parser configuration
 * Relase mode:
     - Check last version corresponds to a given one, then
     - `[Unreleased]` not allowed

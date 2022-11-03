@@ -42,13 +42,10 @@ func (r SubsectionNamming) allowedSubsections(args linting.RuleArgs) (map[string
 		"Removed":    {},
 		"Security":   {},
 	}
-	if args == nil {
-		return result, nil
-	}
 
-	allowed, ok := args.([]any)
-	if !ok {
-		return nil, fmt.Errorf("expected list of strings, got %v (GO type %T)", args, args)
+	allowed, _ := args.([]any)
+	if len(allowed) == 0 { // no conf provided
+		return result, nil
 	}
 
 	result = make(map[string]struct{}, len(allowed))

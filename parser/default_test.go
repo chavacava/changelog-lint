@@ -2,6 +2,7 @@ package parser_test
 
 import (
 	"os"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -56,7 +57,7 @@ expecting subsection, version or change description`,
 			t.Fatalf("error reading test data: %v", err)
 		}
 
-		_, err = p.Parse(file, map[string]string{})
+		_, err = p.Parse(file, parserConf())
 
 		switch {
 		case err != nil && tc.err == "":
@@ -68,10 +69,19 @@ expecting subsection, version or change description`,
 				t.Fatalf("expected error parsing %q:\n%v\ngot:\n%s", dataPath, tc.err, err)
 			}
 		case err == nil && tc.err != "":
-			// should faild
+			// should fail
 			t.Fatalf("expected error\n%q\nparsing %q:\n", tc.err, dataPath)
 		default:
 			// OK
 		}
+	}
+}
+
+func parserConf() *parser.Config {
+	return &parser.Config{
+		TitlePattern:      regexp.MustCompile(`.+`),
+		VersionPattern:    regexp.MustCompile(`^## \[?(\d+\.\d+.\d+|Unreleased)\]?( .*)*$`),
+		SubsectionPattern: regexp.MustCompile(`^### ([A-Z]+[a-z]+)[ ]*$`),
+		EntryPattern:      regexp.MustCompile(`^[*-] .+$`),
 	}
 }

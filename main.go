@@ -47,14 +47,20 @@ func main() {
 	}
 	defer input.Close()
 
-	lintConfig, err := config.GetConfig(*flagConfig)
+	mainConfig, err := config.LoadConfig(*flagConfig)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(codeRequestError)
+	}
+
+	parserConf, err := mainConfig.ParserConfig()
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(codeRequestError)
 	}
 
 	p := parser.Default{}
-	changes, err := p.Parse(input, map[string]string{})
+	changes, err := p.Parse(input, parserConf)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(codeSyntaxError)
@@ -62,7 +68,7 @@ func main() {
 
 	linter := linting.Linter{}
 	failures := make(chan linting.Failure)
-	go linter.Lint(*changes, lintConfig, failures)
+	go linter.Lint(*changes, mainConfig.LintingConfig(), failures)
 
 	exitCode := codeOK
 

@@ -1,0 +1,5 @@
+[parser.patterns]
+    title="title pattern"
+    version="version pattern"
+    subsection="subsection pattern"
+    entry="entry pattern"
