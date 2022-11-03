@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## 0.2.0 - 2022/11/03
 
 ### Added
 - Rules configuration support
