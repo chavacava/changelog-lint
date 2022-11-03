@@ -45,7 +45,7 @@ Example:
     title="^Changelog( .*)?$"
     entry="^\+ .+$"
 ```
-Plase notice some patterns require to have a capturing group (see [Details](#details) below)
+Please notice some patterns require to have a capturing group (see [Details](#details) below)
 
 ### Error codes
 Executing the linter returns one of the following error codes
@@ -55,7 +55,7 @@ Executing the linter returns one of the following error codes
 |`0`| no error|
 |`1`| bad execution parameters/flags (e.g. bad changelog filename)|
 |`2`| syntax error in the changelog file|
-|`3`| the linting found a problem in the changelog|
+|`3`| the linter found a problem in the changelog|
  
 ## Details
 
