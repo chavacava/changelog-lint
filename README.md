@@ -42,17 +42,22 @@ Via the configuration file you can:
 - Overwrite default parser patterns
 
 The format of the configuration file is TOML.
-Example:
+Example, the configuration to lint the `CHANGELOG.md` of [nodejs/changelog-maker](https://github.com/nodejs/changelog-maker/blob/main/CHANGELOG.md) could be:
 ```toml
-[rule.version-empty]
-    Disabled=true
-[rule.subsection-namming]
-    Arguments=["Performance", "Refactoring"]
 [parser.patterns]
-    title="^Changelog( .*)?$"
-    entry="^\+ .+$"
+    title=".*"
+    version='^## \[(\d+\.\d+\.\d+)\]\(https:\/\/github\.com\/nodejs\/changelog-maker\/compare\/v\d+\.\d+\.\d+\.\.\.v\d+\.\d+\.\d+\) \(\d{4}-\d{2}-\d{2}\)$'
+    subsection= '^### (?:⚠ )?([A-Z]+.*)$'
+
+[rule.subsection-order]
+    Disabled=true
+[rule.subsection-naming]
+    Arguments=["BREAKING CHANGES", "Features", "Bug Fixes", "Trivial Changes"]
 ```
+
 Please notice some patterns require to have a capturing group (see [Details](#details) below)
+
+
 
 ### Error codes
 Executing the linter returns one of the following error codes
