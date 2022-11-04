@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 - 2022/11/04
 
 ### Added
 * `release` mode command line flag to enable release-related checks. Example, when releasing version 1.2.3:
