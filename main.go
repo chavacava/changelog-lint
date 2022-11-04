@@ -28,50 +28,60 @@ const (
 )
 
 func main() {
-	flagVersion := flag.Bool("version", false, "get changelog-lint version")
-	flagConfig := flag.String("config", "", "set linter configuration")
-	flagReleaseMode := flag.String("release", "", "enables release-related checks (the given string must be the release version, e.g. 1.2.3)")
-	flag.Parse()
+	os.Exit(run(os.Args))
+}
+
+func run(args []string) int {
+	flags := flag.NewFlagSet(args[0], flag.ExitOnError)
+	flagVersion := flags.Bool("version", false, "get changelog-lint version")
+	flagConfig := flags.String("config", "", "set linter configuration")
+	flagReleaseMode := flags.String("release", "", "enables release-related checks (the given string must be the release version, e.g. 1.2.3)")
+
+	if err := flags.Parse(args[1:]); err != nil {
+		fmt.Println(err)
+		return codeRequestError
+	}
 
 	if *flagVersion {
 		println(versionInfo())
-		os.Exit(codeOK)
+		return codeOK
 	}
-	args := flag.Args()
+
+	freeArgs := flags.Args()
 	inputFilename := "CHANGELOG.md"
-	if len(args) > 0 {
-		inputFilename = args[0]
+	if len(freeArgs) > 0 {
+		inputFilename = freeArgs[0]
 	}
 	input, err := os.Open(inputFilename)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(codeRequestError)
+		return codeRequestError
 	}
 	defer input.Close()
 
 	mainConfig, err := config.LoadConfig(*flagConfig)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(codeRequestError)
+		return codeRequestError
 	}
 
 	parserConf, err := mainConfig.ParserConfig()
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(codeRequestError)
+		return codeRequestError
 	}
 
 	p := parser.Default{}
 	changes, err := p.Parse(input, parserConf)
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(codeSyntaxError)
+		return codeSyntaxError
 	}
 
 	linter := linting.Linter{}
 	failures := make(chan linting.Failure)
 	lintingConfig := mainConfig.LintingConfig()
-	if *flagReleaseMode != "" { // Add release rule to the linting conf
+	if *flagReleaseMode != "" {
 		releaseRule := &rule.Release{}
 		lintingConfig.RuleArgs[releaseRule] = *flagReleaseMode
 	}
@@ -87,8 +97,7 @@ func main() {
 		fmt.Printf("%s: %s %s\n", failure.RuleName, failure.Message, lineInfo)
 		exitCode = codeLintError
 	}
-
-	os.Exit(exitCode)
+	return exitCode
 }
 
 func versionInfo() string {

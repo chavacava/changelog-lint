@@ -1,0 +1,6 @@
+[rule.version-empty
+    Disabled=true
+[rule.version-order]
+    Arguments=[]string{"a","slice","of","strigs"}
+[rule.version-naming]
+    Arguments="a string
