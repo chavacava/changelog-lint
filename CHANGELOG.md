@@ -9,6 +9,7 @@ changelog-lint -release 1.2.3
 ```
 
 ### Fixed
+* Rule disabling not working
 * Typo in rule name: `subsection-namming`
 
 ## 0.2.0 - 2022/11/03

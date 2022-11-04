@@ -48,7 +48,7 @@ func TestLoadConfigRulesPart(t *testing.T) {
 		// Check disabled rule
 		switch r.Name() {
 		case "version-empty":
-			if ok {
+			if !rc.Disabled {
 				t.Fatal("rule \"version-empty\" should be disabled")
 			}
 		default:

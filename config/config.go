@@ -131,10 +131,6 @@ func LoadConfig(configFile string) (*Config, error) {
 	}
 
 	for k, v := range loadedConf.Rules {
-		if v.Disabled {
-			delete(defaultConf.Rules, k)
-			continue
-		}
 		defaultConf.Rules[k] = v
 	}
 
