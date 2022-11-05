@@ -45,6 +45,10 @@ func TestRun(t *testing.T) {
 			args: []string{"changelog-lint", "./testdata/keepachangelog.md"},
 			want: codeOK,
 		},
+		{
+			args: []string{"changelog-lint", "-config", "./testdata/changelog-maker-changelog.conf.toml", "./testdata/changelog-maker-changelog.md"},
+			want: codeOK,
+		},
 	}
 	for _, tc := range testCases {
 		got := run(tc.args)
